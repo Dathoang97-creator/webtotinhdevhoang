@@ -1,17 +1,158 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#050816">
+<title>Gửi bạn</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,300;1,9..144,400&family=Be+Vietnam+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #fdf1e3; --muted: rgba(253,241,227,.76); --amber: #ffb454; --rose: #ff8fab;
+    --serif: "Fraunces", Georgia, "Times New Roman", serif;
+    --ui: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  html, body { height: 100%; margin: 0; }
+  body {
+    overflow: hidden; color: var(--ink); font-family: var(--ui); touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+    background:
+      radial-gradient(ellipse 70% 14% at 50% 76%, rgba(255,160,90,.2), transparent 70%),
+      linear-gradient(180deg, #03050f 0%, #091230 42%, #14304a 75%, #08202f 76%, #040e18 100%);
+  }
+  #c { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; }
+  :focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+
+  .layer { position: fixed; z-index: 1; opacity: 0; visibility: hidden; transition: opacity .9s, visibility .9s; text-align: center; }
+  .layer.on { opacity: 1; visibility: visible; }
+  #intro { inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.3rem; padding: 2rem; }
+  .copy { left: 50%; transform: translateX(-50%); width: min(540px, 90vw); bottom: calc(env(safe-area-inset-bottom, 0px) + 6vh); }
+
+  h1 { margin: 0; font-family: var(--serif); font-style: italic; font-weight: 300; font-size: clamp(3.2rem, 15vw, 6.4rem); line-height: 1.05; text-shadow: 0 0 40px rgba(255,180,84,.5); }
+  h2 { margin: 0 0 1.2rem; font-family: var(--serif); font-style: italic; font-weight: 400; font-size: clamp(1.8rem, 7.4vw, 2.7rem); line-height: 1.2; text-shadow: 0 2px 20px rgba(0,0,0,.6); }
+  .lead { margin: 0; max-width: 30ch; color: var(--muted); line-height: 1.65; }
+  #line { margin: 0 0 .9rem; min-height: 4.2em; font-family: var(--serif); font-style: italic; font-weight: 400; font-size: clamp(1.35rem, 5.6vw, 1.95rem);
+    line-height: 1.38; opacity: 0; transition: opacity .8s; text-shadow: 0 2px 22px rgba(0,0,0,.8); }
+  #line.show { opacity: 1; }
+  #hint { margin: 0 0 1rem; min-height: 1.4em; color: var(--muted); font-size: .95rem; text-shadow: 0 1px 12px rgba(0,0,0,.7); }
+  .btns { display: flex; gap: .8rem; justify-content: center; flex-wrap: wrap; }
+  .pill { padding: .8rem 1.7rem; border: 1px solid rgba(255,214,160,.55); border-radius: 999px; background: rgba(255,180,84,.09); backdrop-filter: blur(4px);
+    color: var(--ink); font: 500 .95rem var(--ui); cursor: pointer; transition: background .2s, transform .15s; }
+  .pill[hidden] { display: none; }
+  .pill:hover { background: rgba(255,180,84,.2); }
+  .pill.solid { border: 0; color: #3a1020; font-weight: 600; background: linear-gradient(135deg, #ffc36b, var(--rose)); box-shadow: 0 8px 34px rgba(255,143,171,.4); }
+  .pill.solid:hover { transform: translateY(-2px); }
+  #soft { min-height: 1.5em; margin: .9rem 0 0; color: var(--muted); font-size: .95rem; }
+  .date { margin: .6rem 0 1.4rem; color: var(--muted); font-size: .9rem; }
+
+  .orb { position: fixed; z-index: 2; left: 50%; top: 36%; transform: translate(-50%, -50%); width: min(62vw, 42vh); height: min(62vw, 42vh);
+    border: 0; border-radius: 50%; background: transparent; cursor: pointer; touch-action: none; display: none;
+    -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+  .orb.on { display: block; }
+  .snd { position: fixed; z-index: 5; top: calc(env(safe-area-inset-top, 0px) + 12px); right: 12px; width: 44px; height: 44px; border: 1px solid rgba(255,214,160,.45);
+    border-radius: 50%; background: rgba(255,180,84,.1); backdrop-filter: blur(6px); font-size: 20px; line-height: 1; cursor: pointer; display: grid; place-items: center; }
+  .snd[hidden] { display: none; }
+
+  @media (prefers-reduced-motion: reduce) { .layer { transition: none; } }
+</style>
 </head>
 <body>
-    <style>
-        body {
-            background-color: #bb7f7f; 
-        }
-    </style>
-    <h1>BIGG</h1>
-    <h1>hhhhh</h1>
-</body>
-</html>
+  <canvas id="c" aria-hidden="true"></canvas>
+
+  <section class="layer on" id="intro">
+    <h1 id="title"></h1>
+    <p class="lead" id="introLead"></p>
+    <button class="pill" id="start" type="button">Bắt đầu</button>
+    <p class="lead" id="introNote" style="font-size:.85rem"></p>
+  </section>
+
+  <button class="orb" id="orb" type="button" aria-label="Giữ để nghe nhịp tim"></button>
+
+  <section class="layer copy" id="play">
+    <p id="line" aria-live="polite"></p>
+    <p id="hint"></p>
+    <button class="pill" id="light" type="button" hidden></button>
+  </section>
+
+  <section class="layer copy" id="ask">
+    <h2 id="askQ"></h2>
+    <div class="btns">
+      <button class="pill solid" id="yes" type="button">Đồng ý</button>
+      <button class="pill" id="wait" type="button">Cho mình nghĩ thêm</button>
+    </div>
+    <p id="soft" role="status"></p>
+  </section>
+
+  <section class="layer copy" id="end">
+    <h2 id="endH"></h2>
+    <p class="lead" id="endLead" style="margin:0 auto;max-width:34ch"></p>
+    <p class="date" id="date"></p>
+    <button class="pill" id="again" type="button">Xem lại</button>
+  </section>
+
+  <button class="snd" id="snd" type="button" aria-label="Tắt nhạc" aria-pressed="true" hidden>🔊</button>
+
+<script>
+(() => {
+  // ✎ CHỈNH Ở ĐÂY: tên người nhận và cách xưng hô
+  const NAME = '';                 // ví dụ 'Linh'. Để trống thì dùng chữ "bạn"
+  const ME = 'mình', YOU = 'bạn';  // có thể đổi thành 'anh' / 'em'
+
+  const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+  const T = (s) => s.replace(/\{Me\}/g, cap(ME)).replace(/\{me\}/g, ME).replace(/\{You\}/g, cap(YOU)).replace(/\{you\}/g, YOU).replace(/\{name\}/g, NAME || YOU);
+
+  // ✎ LỜI NHẮN: sửa tuỳ ý. {me} {you} {name} sẽ tự đổi theo cách xưng hô ở trên
+  const TXT = {
+    title: 'Gửi {name}',
+    lead: '{Me} có vài điều chưa kịp nói thành lời.',
+    note: 'Hãy đeo tai nghe và đi cùng {me} một chút nhé ♪',
+    holdHint: 'Đặt ngón tay lên trái tim, rồi giữ lại nhé',
+    holdMore: 'Giữ tiếp nhé…',
+    hold: [
+      'Đây là nhịp tim của {me}.',
+      'Nó vẫn đập rất bình yên… cho đến khi {me} nghĩ về {you}.',
+      'Rồi nó đập nhanh hơn mỗi khi tin nhắn của {you} hiện lên.',
+      'Giống như lúc này vậy đó.'
+    ],
+    holdDone: 'Hôm nay, {me} muốn kể hết cho {you} nghe.',
+    weather: [
+      'Những ngày nắng, {me} muốn cùng {you} đi dạo thật chậm.',
+      'Không cần đi đâu xa. Chỉ cần được đi bên cạnh {you}, là đủ.',
+      'Những ngày mưa, {me} muốn là chiếc ô của {you}.',
+      'Còn những ngày {you} mệt, {me} muốn là bờ vai để {you} tựa vào.',
+      'Nên dù nắng hay mưa, {me} cũng chỉ muốn đi bên cạnh {you} thôi.'
+    ],
+    wishIntro: 'Người ta bảo, thấy sao băng thì hãy ước một điều. {Me} gửi {you} ba điều ước nhé.',
+    wishBtn: ['Gửi điều ước thứ nhất', 'Gửi điều ước thứ hai', 'Gửi điều ước cuối cùng'],
+    wishes: [
+      'Ước cho {you} luôn bình an, dù ở bất cứ đâu.',
+      'Ước cho nụ cười của {you} đừng bao giờ tắt.',
+      'Và ước, người đi cùng {you} những ngày sau này… là {me}.'
+    ],
+    gather: 'Mỗi ngọn đèn là một lần {me} nghĩ đến {you}.',
+    ask: '{You} ơi, làm người yêu {me} nhé?',
+    soft: '{Me} sẽ chờ, bao lâu cũng được 🤍',
+    endH: 'Cảm ơn {name}',
+    endLead: 'Cảm ơn vì đã đến bên {me}. {You} là điều dịu dàng nhất trong những ngày của {me}, và từ hôm nay, {me} sẽ ở cạnh {you}, dù nắng hay mưa.'
+  };
+
+  const $ = (id) => document.getElementById(id);
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+  const ease = (p) => 1 - Math.pow(1 - p, 3);
+  const nowS = () => performance.now() / 1000;
+  document.title = T(TXT.title);
+  $('title').textContent = T(TXT.title); $('introLead').textContent = T(TXT.lead); $('introNote').textContent = T(TXT.note);
+  $('askQ').textContent = T(TXT.ask); $('endH').textContent = T(TXT.endH); $('endLead').textContent = T(TXT.endLead);
+
+  const cv = $('c'), ctx = cv.getContext('2d');
+  let W, H, HOR, U, stars = [], flies = [], ripples = [];
+  function resize() {
+    const d = Math.min(devicePixelRatio || 1, 2);
+    W = innerWidth; H = innerHeight; HOR = H * .76; U = Math.min(W, H);
+    cv.width = W * d; cv.height = H * d; ctx.setTransform(d, 0, 0, d, 0, 0);
+    stars = Array.from({ length: Math.round(W * H / 5200) }, () => ({ x: rnd(0, W), y: rnd(0, HOR * .92), r: rnd(.4, 1.5), ph:
