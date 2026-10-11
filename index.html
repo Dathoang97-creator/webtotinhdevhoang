@@ -1,7 +1,4 @@
-import os, webbrowser
-from pathlib import Path
-
-HTML = r'''<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
 <meta charset="utf-8">
@@ -568,9 +565,3 @@ HTML = r'''<!DOCTYPE html>
 </script>
 </body>
 </html>
-'''
-
-path = Path(os.path.abspath("goi_ban.html"))
-path.write_text(HTML, encoding="utf-8")
-print("Đã tạo file:", path)
-webbrowser.open(path.as_uri())
